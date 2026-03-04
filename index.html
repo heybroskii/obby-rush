@@ -1,1 +1,609 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBBY RUSH</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: 'Nunito', sans-serif;
+    overflow: hidden;
+  }
+
+  #title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.8rem;
+    color: #fff;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px #ff6b35, 0 0 40px #ff6b35;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { text-shadow: 0 0 20px #ff6b35, 0 0 40px #ff6b35; }
+    50% { text-shadow: 0 0 30px #ffcc00, 0 0 60px #ffcc00; }
+  }
+
+  #hud {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 1px;
+  }
+
+  .hud-item { 
+    background: rgba(255,255,255,0.1); 
+    padding: 4px 16px; 
+    border-radius: 20px;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+
+  #gameCanvas {
+    border: 3px solid rgba(255, 107, 53, 0.6);
+    border-radius: 12px;
+    box-shadow: 0 0 40px rgba(255,107,53,0.3), 0 0 80px rgba(255,107,53,0.1);
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  #controls {
+    margin-top: 10px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+  }
+
+  #overlay {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    pointer-events: none;
+  }
+
+  .overlay-box {
+    background: rgba(0,0,0,0.85);
+    border: 3px solid #ff6b35;
+    border-radius: 16px;
+    padding: 32px 48px;
+    text-align: center;
+    color: #fff;
+    pointer-events: all;
+  }
+
+  .overlay-box h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    color: #ff6b35;
+    margin-bottom: 10px;
+  }
+
+  .overlay-box p { color: rgba(255,255,255,0.7); margin-bottom: 20px; font-size: 0.95rem; }
+
+  .btn {
+    background: linear-gradient(135deg, #ff6b35, #ff3b00);
+    color: #fff;
+    border: none;
+    padding: 12px 36px;
+    border-radius: 30px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 20px rgba(255,107,53,0.5);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .btn:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(255,107,53,0.7); }
+  .btn:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+
+<div id="title">🔥 OBBY RUSH 🔥</div>
+<div id="hud">
+  <div class="hud-item">❤️ LIVES: <span id="livesDisplay">3</span></div>
+  <div class="hud-item">⭐ STAGE: <span id="stageDisplay">1</span></div>
+  <div class="hud-item">🏆 BEST: <span id="bestDisplay">1</span></div>
+</div>
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<div id="controls">← → MOVE &nbsp;|&nbsp; SPACE / ↑ JUMP &nbsp;|&nbsp; DOUBLE JUMP ALLOWED!</div>
+
+<div id="overlay">
+  <div class="overlay-box" id="startScreen">
+    <h2>OBBY RUSH</h2>
+    <p>Jump over lava pits, cross moving platforms,<br>and reach the finish flag! 3 lives per run.</p>
+    <button class="btn" onclick="startGame()">▶ PLAY</button>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const W = canvas.width, H = canvas.height;
+const GRAVITY = 0.55;
+const PLAYER_SPEED = 4.5;
+const JUMP_FORCE = -13;
+const GROUND_Y = H - 50;
+
+let gameState = 'start'; // start, playing, dead, win, gameover
+let lives = 3, stage = 1, bestStage = 1;
+let keys = {};
+let cameraX = 0;
+let animFrame = 0;
+
+// Player
+let player = {};
+function resetPlayer() {
+  player = {
+    x: 60, y: GROUND_Y - 36,
+    vx: 0, vy: 0,
+    w: 28, h: 36,
+    onGround: false,
+    jumpsLeft: 2,
+    dead: false,
+    deathTimer: 0,
+    blinkTimer: 0
+  };
+  cameraX = 0;
+}
+
+// Level generator
+function buildLevel(stageNum) {
+  const platforms = [];
+  const lava = [];
+  const movingPlatforms = [];
+
+  // Always start with solid ground
+  platforms.push({ x: 0, y: GROUND_Y, w: 260, h: 50, color: '#4a9e3f' });
+
+  let x = 280;
+  const sections = 4 + stageNum * 2;
+
+  for (let i = 0; i < sections; i++) {
+    const type = i % 3;
+    if (type === 0) {
+      // Gap with lava
+      const gapW = 80 + Math.min(stageNum * 10, 60);
+      lava.push({ x, y: GROUND_Y + 4, w: gapW, h: 46 });
+      x += gapW;
+      platforms.push({ x, y: GROUND_Y, w: 100 + Math.random() * 80 | 0, h: 50, color: '#4a9e3f' });
+      x += platforms[platforms.length-1].w + 20;
+    } else if (type === 1) {
+      // Elevated section
+      const pw = 80 + Math.random() * 60 | 0;
+      platforms.push({ x, y: GROUND_Y - 70 - Math.random() * 40 | 0, w: pw, h: 18, color: '#6ab04c' });
+      lava.push({ x, y: GROUND_Y + 4, w: pw + 60, h: 46 });
+      x += pw + 60;
+      platforms.push({ x, y: GROUND_Y, w: 100, h: 50, color: '#4a9e3f' });
+      x += 120;
+    } else {
+      // Moving platform over lava
+      const gapW = 100 + stageNum * 15;
+      lava.push({ x, y: GROUND_Y + 4, w: gapW + 40, h: 46 });
+      movingPlatforms.push({
+        x, y: GROUND_Y - 50,
+        w: 70, h: 16,
+        startX: x, endX: x + gapW,
+        speed: 1.5 + stageNum * 0.3,
+        dir: 1,
+        color: '#f0a500'
+      });
+      x += gapW + 60;
+      platforms.push({ x, y: GROUND_Y, w: 120, h: 50, color: '#4a9e3f' });
+      x += 140;
+    }
+  }
+
+  // Final flag platform
+  platforms.push({ x, y: GROUND_Y, w: 120, h: 50, color: '#4a9e3f' });
+  const flagX = x + 30;
+  const levelEnd = x + 120;
+
+  return { platforms, lava, movingPlatforms, flagX, levelEnd };
+}
+
+let level = {};
+
+function startGame() {
+  lives = 3;
+  stage = 1;
+  bestStage = 1;
+  level = buildLevel(stage);
+  resetPlayer();
+  gameState = 'playing';
+  document.getElementById('overlay').innerHTML = '';
+  updateHUD();
+  loop();
+}
+
+function nextStage() {
+  stage++;
+  if (stage > bestStage) bestStage = stage;
+  level = buildLevel(stage);
+  resetPlayer();
+  gameState = 'playing';
+  document.getElementById('overlay').innerHTML = '';
+  updateHUD();
+}
+
+function loseLife() {
+  lives--;
+  updateHUD();
+  if (lives <= 0) {
+    gameState = 'gameover';
+    showOverlay('GAME OVER', `You reached Stage ${stage}!`, '🔁 TRY AGAIN', 'startGame');
+  } else {
+    gameState = 'dead';
+    setTimeout(() => {
+      resetPlayer();
+      gameState = 'playing';
+    }, 1000);
+  }
+}
+
+function showOverlay(title, msg, btnText, fnName) {
+  document.getElementById('overlay').innerHTML = `
+    <div class="overlay-box">
+      <h2>${title}</h2>
+      <p>${msg}</p>
+      <button class="btn" onclick="${fnName}()">${btnText}</button>
+    </div>`;
+}
+
+function updateHUD() {
+  document.getElementById('livesDisplay').textContent = lives;
+  document.getElementById('stageDisplay').textContent = stage;
+  document.getElementById('bestDisplay').textContent = bestStage;
+}
+
+// Input
+document.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if ((e.code === 'Space' || e.code === 'ArrowUp') && gameState === 'playing') {
+    e.preventDefault();
+    if (player.jumpsLeft > 0) {
+      player.vy = JUMP_FORCE;
+      player.jumpsLeft--;
+      player.onGround = false;
+    }
+  }
+});
+document.addEventListener('keyup', e => keys[e.code] = false);
+
+function update() {
+  if (gameState !== 'playing') return;
+  animFrame++;
+
+  // Move player
+  if (keys['ArrowLeft'] || keys['KeyA']) player.vx = -PLAYER_SPEED;
+  else if (keys['ArrowRight'] || keys['KeyD']) player.vx = PLAYER_SPEED;
+  else player.vx *= 0.8;
+
+  player.vy += GRAVITY;
+  player.x += player.vx;
+  player.y += player.vy;
+
+  // Camera
+  const targetCam = player.x - W * 0.35;
+  cameraX += (targetCam - cameraX) * 0.12;
+  if (cameraX < 0) cameraX = 0;
+
+  // Update moving platforms
+  for (const mp of level.movingPlatforms) {
+    mp.x += mp.speed * mp.dir;
+    if (mp.x > mp.endX) { mp.x = mp.endX; mp.dir = -1; }
+    if (mp.x < mp.startX) { mp.x = mp.startX; mp.dir = 1; }
+  }
+
+  // Collision with all platforms
+  player.onGround = false;
+  const allPlatforms = [...level.platforms, ...level.movingPlatforms];
+
+  for (const p of allPlatforms) {
+    if (
+      player.x + player.w > p.x &&
+      player.x < p.x + p.w &&
+      player.y + player.h > p.y &&
+      player.y + player.h < p.y + p.h + 14 &&
+      player.vy >= 0
+    ) {
+      player.y = p.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+      player.jumpsLeft = 2;
+      // Ride moving platform
+      if (p.speed !== undefined) player.x += p.speed * p.dir;
+    }
+  }
+
+  // Lava death
+  for (const lv of level.lava) {
+    if (
+      player.x + player.w > lv.x + 4 &&
+      player.x < lv.x + lv.w - 4 &&
+      player.y + player.h > lv.y
+    ) {
+      loseLife();
+      return;
+    }
+  }
+
+  // Fall off bottom
+  if (player.y > H + 100) { loseLife(); return; }
+
+  // Reach flag
+  if (player.x + player.w > level.flagX && player.x < level.flagX + 30) {
+    gameState = 'win';
+    if (stage > bestStage) bestStage = stage;
+    updateHUD();
+    showOverlay('STAGE CLEAR! 🎉', `Amazing! Onto Stage ${stage + 1}...`, '▶ NEXT STAGE', 'nextStage');
+  }
+}
+
+function drawBackground() {
+  // Sky gradient
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#1a1a4e');
+  sky.addColorStop(0.6, '#2d3a7a');
+  sky.addColorStop(1, '#1a2040');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  for (let i = 0; i < 60; i++) {
+    const sx = (i * 137 + animFrame * 0.05) % W;
+    const sy = (i * 73) % (H * 0.6);
+    const size = (i % 3 === 0) ? 2 : 1;
+    ctx.fillRect(sx, sy, size, size);
+  }
+
+  // Clouds
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  for (let i = 0; i < 4; i++) {
+    const cx = ((i * 250 - cameraX * 0.2) % (W + 200) + W + 200) % (W + 200) - 100;
+    const cy = 50 + i * 35;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 70, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + 50, cy - 10, 50, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawLava(lv) {
+  const lx = lv.x - cameraX;
+  // Lava base
+  const grad = ctx.createLinearGradient(lx, lv.y, lx, lv.y + lv.h);
+  grad.addColorStop(0, '#ff4500');
+  grad.addColorStop(0.4, '#cc2200');
+  grad.addColorStop(1, '#880000');
+  ctx.fillStyle = grad;
+  ctx.fillRect(lx, lv.y, lv.w, lv.h);
+
+  // Lava bubbles
+  ctx.fillStyle = '#ff6a00';
+  for (let i = 0; i < Math.floor(lv.w / 20); i++) {
+    const bx = lx + 10 + i * 20;
+    const by = lv.y + 6 + Math.sin(animFrame * 0.08 + i) * 4;
+    ctx.beginPath();
+    ctx.ellipse(bx, by, 8, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Glow
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = '#ff4500';
+  ctx.fillStyle = 'rgba(255,69,0,0.3)';
+  ctx.fillRect(lx, lv.y - 8, lv.w, 8);
+  ctx.shadowBlur = 0;
+}
+
+function drawPlatform(p) {
+  const px = p.x - cameraX;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(px + 4, p.y + 4, p.w, p.h);
+
+  // Platform body
+  ctx.fillStyle = p.color || '#4a9e3f';
+  ctx.fillRect(px, p.y, p.w, p.h);
+
+  // Top grass strip
+  if (!p.speed) {
+    ctx.fillStyle = '#6fcf57';
+    ctx.fillRect(px, p.y, p.w, 8);
+    // Grass blades
+    ctx.fillStyle = '#5bb548';
+    for (let i = 4; i < p.w - 4; i += 12) {
+      ctx.fillRect(px + i, p.y - 4, 3, 6);
+    }
+    // Dirt texture
+    ctx.fillStyle = '#3a7e30';
+    for (let i = 0; i < 3; i++) {
+      ctx.fillRect(px + 10 + i * (p.w/3), p.y + 14, 12, 4);
+    }
+  } else {
+    // Moving platform: glowing orange
+    const grd = ctx.createLinearGradient(px, p.y, px, p.y + p.h);
+    grd.addColorStop(0, '#ffcc44');
+    grd.addColorStop(1, '#e08800');
+    ctx.fillStyle = grd;
+    ctx.fillRect(px, p.y, p.w, p.h);
+    ctx.fillStyle = '#fff176';
+    ctx.fillRect(px + 4, p.y + 3, p.w - 8, 4);
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = '#ffaa00';
+    ctx.fillStyle = 'rgba(255,200,0,0.2)';
+    ctx.fillRect(px, p.y, p.w, p.h);
+    ctx.shadowBlur = 0;
+  }
+}
+
+function drawFlag() {
+  const fx = level.flagX - cameraX;
+  if (fx < -10 || fx > W + 10) return;
+
+  // Pole
+  ctx.fillStyle = '#ccc';
+  ctx.fillRect(fx, GROUND_Y - 100, 4, 100);
+
+  // Flag wave
+  ctx.fillStyle = '#ff3b00';
+  for (let i = 0; i < 3; i++) {
+    const wave = Math.sin(animFrame * 0.1 + i * 0.5) * 4;
+    ctx.fillRect(fx + 4 + i * 10, GROUND_Y - 95 + wave, 10, 22);
+  }
+
+  // Glow
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = '#ffcc00';
+  ctx.fillStyle = '#ffee00';
+  ctx.beginPath();
+  ctx.arc(fx + 2, GROUND_Y - 102, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function drawPlayer() {
+  const px = player.x - cameraX;
+  const py = player.y;
+
+  if (gameState === 'dead') {
+    ctx.globalAlpha = Math.sin(animFrame * 0.3) > 0 ? 0.5 : 0;
+  }
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(px + 2, GROUND_Y - 2, player.w - 4, 6);
+
+  // Body
+  const bodyGrad = ctx.createLinearGradient(px, py, px, py + player.h);
+  bodyGrad.addColorStop(0, '#4fc3f7');
+  bodyGrad.addColorStop(1, '#0288d1');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(px, py + 12, player.w, player.h - 12, 4);
+  ctx.fill();
+
+  // Head
+  ctx.fillStyle = '#ffcc80';
+  ctx.beginPath();
+  ctx.ellipse(px + player.w/2, py + 9, 12, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(px + 6, py + 5, 4, 5);
+  ctx.fillRect(px + 16, py + 5, 4, 5);
+
+  // Eye shine
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(px + 7, py + 5, 2, 2);
+  ctx.fillRect(px + 17, py + 5, 2, 2);
+
+  // Legs (animated)
+  ctx.fillStyle = '#1565c0';
+  const legSwing = player.onGround ? Math.sin(animFrame * 0.3) * 5 : 0;
+  ctx.fillRect(px + 4, py + player.h - 8, 8, 10 + legSwing);
+  ctx.fillRect(px + player.w - 12, py + player.h - 8, 8, 10 - legSwing);
+
+  ctx.globalAlpha = 1;
+}
+
+function drawHints() {
+  // Arrow showing direction if player is at start
+  if (player.x < 100 && gameState === 'playing') {
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = 'bold 16px Nunito';
+    ctx.fillText('→ GO RIGHT!', 20, 30);
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  drawBackground();
+
+  // Draw lava
+  for (const lv of level.lava) {
+    if (lv.x - cameraX < W + 100 && lv.x + lv.w - cameraX > -100)
+      drawLava(lv);
+  }
+
+  // Draw platforms
+  for (const p of level.platforms) {
+    if (p.x - cameraX < W + 100 && p.x + p.w - cameraX > -100)
+      drawPlatform(p);
+  }
+
+  // Draw moving platforms
+  for (const mp of level.movingPlatforms) {
+    drawPlatform(mp);
+  }
+
+  drawFlag();
+  drawPlayer();
+  drawHints();
+
+  // Stage label
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = 'bold 13px Nunito';
+  ctx.fillText(`STAGE ${stage}`, W - 80, 24);
+}
+
+let loopRunning = false;
+function loop() {
+  if (!loopRunning) return;
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// Init
+level = buildLevel(1);
+resetPlayer();
+draw(); // draw initial frame
+
+// Show start screen
+document.getElementById('overlay').innerHTML = `
+  <div class="overlay-box" id="startScreen">
+    <h2>🔥 OBBY RUSH</h2>
+    <p>Jump over lava pits, survive moving platforms,<br>and reach the 🚩 flag each stage!<br><br><strong>← → Move &nbsp;|&nbsp; Space / ↑ Jump (double jump!)</strong></p>
+    <button class="btn" onclick="startGame()">▶ PLAY NOW</button>
+  </div>`;
+
+function startGame() {
+  lives = 3;
+  stage = 1;
+  bestStage = 1;
+  level = buildLevel(stage);
+  resetPlayer();
+  gameState = 'playing';
+  document.getElementById('overlay').innerHTML = '';
+  updateHUD();
+  loopRunning = true;
+  loop();
+}
+</script>
+</body>
+</html>
