@@ -43,6 +43,8 @@ body{background:#0a0a1a;display:flex;flex-direction:column;align-items:center;ju
 .ward-resume:hover{opacity:.9}
 #gb{position:fixed;top:14px;right:16px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:50%;width:42px;height:42px;font-size:1.2rem;cursor:pointer;z-index:999;display:flex;align-items:center;justify-content:center;transition:all .2s}
 #gb:hover{background:rgba(255,107,53,.2);border-color:#ff6b35;transform:rotate(90deg)}
+#mgBtn{position:fixed;top:14px;right:166px;background:linear-gradient(135deg,#6d28d9,#a855f7);border:2px solid #c084fc;border-radius:50%;width:42px;height:42px;font-size:1.2rem;cursor:pointer;z-index:999;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(168,85,247,.4);transition:all .2s}
+#mgBtn:hover{transform:scale(1.12);box-shadow:0 0 22px rgba(168,85,247,.7)}
 #shopBtn{position:fixed;top:14px;right:66px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border:2px solid #fde68a;border-radius:50%;width:42px;height:42px;font-size:1.2rem;cursor:pointer;z-index:999;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(251,191,36,.4);transition:all .2s}
 #shopBtn:hover{transform:scale(1.12);box-shadow:0 0 22px rgba(251,191,36,.7)}
 .shop-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1500;backdrop-filter:blur(6px)}
@@ -97,12 +99,14 @@ body{background:#0a0a1a;display:flex;flex-direction:column;align-items:center;ju
 .emote-btn .ek{font-size:.55rem;font-weight:900;color:rgba(255,255,255,.35);letter-spacing:1px}
 .emote-btn .en{font-size:.55rem;font-weight:900;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase}
 #emotelabel{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);border:2px solid #ff6b35;border-radius:20px;padding:6px 18px;color:#ff6b35;font-size:.85rem;font-weight:900;letter-spacing:2px;pointer-events:none;opacity:0;transition:opacity .2s;z-index:501}
+#credit{position:fixed;bottom:10px;right:14px;color:rgba(255,255,255,.25);font-size:.65rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;pointer-events:none;z-index:500}
 </style></head><body>
 <div id="ttl">🔥 OBBY RUSH V2 🔥</div>
 <div id="hud"><div class="hi">❤️ <span id="ld">3</span></div><div class="hi">⭐ STAGE <span id="sd">1</span></div><div class="hi">🏆 BEST <span id="bd">1</span></div><div class="hi">🪙 <span id="cd">0</span></div><div class="hi" id="lbHud" style="display:none">📦 <span id="lbCount">0</span></div></div>
 <canvas id="gc" width="800" height="400"></canvas>
 <div id="ctrl">← → MOVE &nbsp;|&nbsp; SPACE / ↑ JUMP &nbsp;|&nbsp; DOUBLE JUMP &nbsp;|&nbsp; E = LUCKY BLOCK &nbsp;|&nbsp; 1-5 = EMOTES</div>
 <div id="emotelabel"></div>
+<div id="credit">Gunnar &amp; Abram Co.</div>
 <div id="emotebar">
   <div class="emote-btn" id="eb1" onclick="triggerEmote(0)"><div class="ei">🤸</div><div class="ek">[ 1 ]</div><div class="en">Flip</div></div>
   <div class="emote-btn" id="eb2" onclick="triggerEmote(1)"><div class="ei">💃</div><div class="ek">[ 2 ]</div><div class="en">Dance</div></div>
@@ -112,6 +116,7 @@ body{background:#0a0a1a;display:flex;flex-direction:column;align-items:center;ju
 </div>
 <button id="wardBtn" onclick="showWardrobe()" title="Change Outfit">👕</button>
 <button id="shopBtn" onclick="showShop()" title="Shop">🛒</button>
+<button id="mgBtn" onclick="showInGameMiniMenu()" title="Mini-Games">🎮</button>
 <button id="gb" onclick="showSett()">⚙️</button>
 <div id="ov"></div>
 <script>
@@ -438,10 +443,10 @@ function showCoinMenu(){
 
 // ── COSMETICS ──
 const SKINS=['#ffcc80','#f5c5a3','#d4956a','#a0624a','#6b3a2a','#ffe0b2'];
-const BODIES=['#4fc3f7','#ef5350','#66bb6a','#ab47bc','#ffa726','#ec407a','#26c6da','#fff'];
-const EYES=['normal','sleepy','wide','cross','star','cool'];
-const HATS=['none','cap','crown','party','wizard','halo'];
-const TRAILS=['none','fire','star','rainbow','ice'];
+const BODIES=['#4fc3f7','#ef5350','#66bb6a','#ab47bc','#ffa726','#ec407a','#26c6da','#fff','#f87171','#34d399','#818cf8','#fb923c'];
+const EYES=['normal','sleepy','wide','cross','star','cool','angry','heart','dizzy'];
+const HATS=['none','cap','crown','party','wizard','halo','cowboy','helmet','flower','santa'];
+const TRAILS=['none','fire','star','rainbow','ice','angel','lightning','bubbles','hearts'];
 let cos={skin:SKINS[0],body:BODIES[0],eyes:'normal',hat:'none',trail:'none'};
 const pv=document.createElement('canvas');pv.width=80;pv.height=110;pv.id='pv';
 const pc=pv.getContext('2d');let pa=0;
@@ -473,6 +478,9 @@ function drawEyes(ctx,px,py,s){
   else if(s==='cross'){ctx.strokeStyle='#1a1a2e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+5,py+4);ctx.lineTo(px+10,py+9);ctx.moveTo(px+10,py+4);ctx.lineTo(px+5,py+9);ctx.moveTo(px+15,py+4);ctx.lineTo(px+20,py+9);ctx.moveTo(px+20,py+4);ctx.lineTo(px+15,py+9);ctx.stroke();ctx.lineWidth=1;}
   else if(s==='star'){ctx.fillStyle='#fbbf24';ctx.font='9px serif';ctx.fillText('★',px+4,py+10);ctx.fillText('★',px+15,py+10);}
   else if(s==='cool'){ctx.fillStyle='#222';ctx.fillRect(px+4,py+5,8,4);ctx.fillRect(px+14,py+5,8,4);}
+  else if(s==='angry'){ctx.fillStyle='#1a1a2e';ctx.fillRect(px+6,py+6,4,4);ctx.fillRect(px+16,py+6,4,4);ctx.strokeStyle='#ef4444';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px+5,py+4);ctx.lineTo(px+11,py+6);ctx.moveTo(px+15,py+6);ctx.lineTo(px+21,py+4);ctx.stroke();ctx.lineWidth=1;}
+  else if(s==='heart'){ctx.fillStyle='#f43f5e';ctx.font='9px serif';ctx.fillText('♥',px+4,py+10);ctx.fillText('♥',px+15,py+10);}
+  else if(s==='dizzy'){ctx.strokeStyle='#1a1a2e';ctx.lineWidth=1.5;[[px+8,py+7],[px+19,py+7]].forEach(([ex,ey])=>{ctx.beginPath();ctx.arc(ex,ey,3.5,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(ex-2,ey-2);ctx.lineTo(ex+2,ey+2);ctx.moveTo(ex+2,ey-2);ctx.lineTo(ex-2,ey+2);ctx.stroke();});ctx.lineWidth=1;}
 }
 function drawHat(ctx,px,py,w,hat,fr){
   const cx=px+w/2;
@@ -483,6 +491,10 @@ function drawHat(ctx,px,py,w,hat,fr){
   else if(hat==='halo'){ctx.strokeStyle='#fde68a';ctx.lineWidth=3;ctx.shadowBlur=10;ctx.shadowColor='#fbbf24';ctx.beginPath();ctx.ellipse(cx,py-14+Math.sin((fr||0)*.05)*2,12,4,0,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;ctx.lineWidth=1;}
   else if(hat==='dev'){ctx.fillStyle='#1e1e2e';ctx.fillRect(px-2,py-6,w+4,5);ctx.fillRect(px+3,py-16,w-4,11);ctx.fillStyle='#ff6b35';ctx.fillRect(px+3,py-16,w-4,4);ctx.fillStyle='#fff';ctx.font='bold 5px monospace';ctx.fillText('DEV',px+6,py-8);ctx.fillStyle='#ff6b35';ctx.fillRect(px-2,py-7,w+4,2);}
   else if(hat==='lava'){ctx.shadowBlur=14;ctx.shadowColor='#ff4500';ctx.fillStyle='#cc2200';ctx.beginPath();ctx.moveTo(px+2,py-3);ctx.lineTo(px+2,py-13);ctx.lineTo(cx-5,py-7);ctx.lineTo(cx,py-17);ctx.lineTo(cx+5,py-7);ctx.lineTo(px+w-2,py-13);ctx.lineTo(px+w-2,py-3);ctx.closePath();ctx.fill();ctx.fillStyle='#ff6b35';[px+4,cx,px+w-4].forEach(x=>{ctx.beginPath();ctx.arc(x,py-13,3,0,Math.PI*2);ctx.fill();});ctx.shadowBlur=0;}
+  else if(hat==='cowboy'){ctx.fillStyle='#92400e';ctx.fillRect(px-6,py-5,w+12,4);ctx.fillRect(px+1,py-16,w-2,12);ctx.fillStyle='#b45309';ctx.fillRect(px+2,py-16,w-4,3);ctx.fillStyle='#fbbf24';ctx.fillRect(px+3,py-10,w-6,2);}
+  else if(hat==='helmet'){const hg=ctx.createLinearGradient(px,py-18,px,py-4);hg.addColorStop(0,'#60a5fa');hg.addColorStop(1,'#1d4ed8');ctx.fillStyle=hg;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(px-1,py-18,w+2,15,6);else ctx.rect(px-1,py-18,w+2,15);ctx.fill();ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(px+3,py-17,8,4);ctx.fillStyle='#93c5fd';ctx.fillRect(px+4,py-11,w-8,3);}
+  else if(hat==='flower'){ctx.fillStyle='#f472b6';[0,1,2,3,4].forEach(i=>{const a=i/5*Math.PI*2;ctx.beginPath();ctx.ellipse(cx+Math.cos(a)*7,py-16+Math.sin(a)*5,5,4,a,0,Math.PI*2);ctx.fill();});ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(cx,py-16,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#86efac';ctx.fillRect(cx-1,py-12,2,8);}
+  else if(hat==='santa'){ctx.fillStyle='#dc2626';ctx.beginPath();ctx.moveTo(px+2,py-4);ctx.lineTo(cx+2,py-24);ctx.lineTo(px+w-2,py-4);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(px-3,py-6,w+6,5);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx+2,py-24,4,0,Math.PI*2);ctx.fill();}
 }
 function drawTrail(ctx,px,py,w,h,trail,fr){
   for(let i=0;i<6;i++){
@@ -493,6 +505,9 @@ function drawTrail(ctx,px,py,w,h,trail,fr){
     else if(trail==='rainbow'){ctx.fillStyle=['#f87171','#fbbf24','#4ade80','#60a5fa','#a78bfa','#f472b6'][i%6];ctx.beginPath();ctx.arc(px+w/2+ox,py+h/2+oy,5-i*.5,0,Math.PI*2);ctx.fill();}
     else if(trail==='ice'){ctx.fillStyle='#bfdbfe';ctx.beginPath();ctx.arc(px+w/2+ox,py+h/2+oy,4-i*.4,0,Math.PI*2);ctx.fill();}
     else if(trail==='angel'){ctx.fillStyle='#fde68a';ctx.shadowBlur=8;ctx.shadowColor='#fff';ctx.beginPath();ctx.arc(px+w/2+ox,py+oy-2,3-i*.3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
+    else if(trail==='lightning'){ctx.fillStyle=i%2?'#fbbf24':'#fff';ctx.shadowBlur=6;ctx.shadowColor='#fbbf24';ctx.font=`${12-i}px serif`;ctx.fillText('⚡',px+ox-4,py+h/2+oy);ctx.shadowBlur=0;}
+    else if(trail==='bubbles'){ctx.strokeStyle=`rgba(147,197,253,${0.6-i*0.08})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px+w/2+ox+Math.sin(i*1.3)*4,py+h/2+oy,4-i*0.4,0,Math.PI*2);ctx.stroke();ctx.lineWidth=1;}
+    else if(trail==='hearts'){ctx.fillStyle=['#f43f5e','#fb7185','#fda4af'][i%3];ctx.font=`${11-i}px serif`;ctx.fillText('♥',px+ox,py+h/2+oy+Math.sin(i*1.5)*3);}
     ctx.globalAlpha=1;
   }
 }
@@ -647,35 +662,53 @@ const SHOP_ITEMS = [
   // LUCKY BLOCK
   {id:'sh_lb', type:'luckyblock', val:'luckyblock', name:'Lucky Block', icon:'📦', price:150, rarity:'epic', desc:'Press E to place. What will you get?'},
   // HATS
-  {id:'sh_cap',    type:'hat',  val:'cap',    name:'Red Cap',      icon:'🧢', price:80,   rarity:'common',    desc:'Classic red cap'},
-  {id:'sh_crown',  type:'hat',  val:'crown',  name:'Gold Crown',   icon:'👑', price:300,  rarity:'epic',      desc:'Royalty awaits'},
-  {id:'sh_party',  type:'hat',  val:'party',  name:'Party Hat',    icon:'🎉', price:120,  rarity:'rare',      desc:'Always a party'},
-  {id:'sh_wizard', type:'hat',  val:'wizard', name:'Wizard Hat',   icon:'🧙', price:250,  rarity:'rare',      desc:'Ancient magic'},
-  {id:'sh_halo',   type:'hat',  val:'halo',   name:'Halo',         icon:'😇', price:500,  rarity:'legendary', desc:'Pure angel energy'},
+  {id:'sh_cap',    type:'hat', val:'cap',     name:'Red Cap',      icon:'🧢', price:80,   rarity:'common',    desc:'Classic red cap'},
+  {id:'sh_crown',  type:'hat', val:'crown',   name:'Gold Crown',   icon:'👑', price:300,  rarity:'epic',      desc:'Royalty awaits'},
+  {id:'sh_party',  type:'hat', val:'party',   name:'Party Hat',    icon:'🎉', price:120,  rarity:'rare',      desc:'Always a party'},
+  {id:'sh_wizard', type:'hat', val:'wizard',  name:'Wizard Hat',   icon:'🧙', price:250,  rarity:'rare',      desc:'Ancient magic'},
+  {id:'sh_halo',   type:'hat', val:'halo',    name:'Halo',         icon:'😇', price:500,  rarity:'legendary', desc:'Pure angel energy'},
+  {id:'sh_cowboy', type:'hat', val:'cowboy',  name:'Cowboy Hat',   icon:'🤠', price:180,  rarity:'rare',      desc:'Yeehaw partner'},
+  {id:'sh_helmet', type:'hat', val:'helmet',  name:'Knight Helmet',icon:'⛑️', price:220,  rarity:'rare',      desc:'Forged for battle'},
+  {id:'sh_flower', type:'hat', val:'flower',  name:'Flower Crown', icon:'🌸', price:160,  rarity:'rare',      desc:'Bloom forever'},
+  {id:'sh_santa',  type:'hat', val:'santa',   name:'Santa Hat',    icon:'🎅', price:350,  rarity:'epic',      desc:'Ho ho ho!'},
   // TRAILS
-  {id:'sh_fire',   type:'trail',val:'fire',   name:'Fire Trail',   icon:'🔥', price:150,  rarity:'rare',      desc:'Leave flames behind'},
-  {id:'sh_star',   type:'trail',val:'star',   name:'Star Trail',   icon:'⭐', price:100,  rarity:'common',    desc:'Shoot for the stars'},
-  {id:'sh_rainbow',type:'trail',val:'rainbow',name:'Rainbow Trail',icon:'🌈', price:400,  rarity:'epic',      desc:'Taste the rainbow'},
-  {id:'sh_ice',    type:'trail',val:'ice',    name:'Ice Trail',    icon:'❄️', price:200,  rarity:'rare',      desc:'Stay frosty'},
+  {id:'sh_fire',      type:'trail', val:'fire',      name:'Fire Trail',      icon:'🔥', price:150, rarity:'rare',      desc:'Leave flames behind'},
+  {id:'sh_star',      type:'trail', val:'star',      name:'Star Trail',      icon:'⭐', price:100, rarity:'common',    desc:'Shoot for the stars'},
+  {id:'sh_rainbow',   type:'trail', val:'rainbow',   name:'Rainbow Trail',   icon:'🌈', price:400, rarity:'epic',      desc:'Taste the rainbow'},
+  {id:'sh_ice',       type:'trail', val:'ice',       name:'Ice Trail',       icon:'❄️', price:200, rarity:'rare',      desc:'Stay frosty'},
+  {id:'sh_lightning', type:'trail', val:'lightning', name:'Lightning Trail', icon:'⚡', price:350, rarity:'epic',      desc:'Speed of light'},
+  {id:'sh_bubbles',   type:'trail', val:'bubbles',   name:'Bubble Trail',    icon:'🫧', price:180, rarity:'rare',      desc:'Float on air'},
+  {id:'sh_hearts',    type:'trail', val:'hearts',    name:'Heart Trail',     icon:'💕', price:220, rarity:'rare',      desc:'Spread the love'},
   // BODY COLORS
-  {id:'sh_body_r', type:'body', val:'#ef5350',name:'Fire Red',     icon:'🔴', price:50,   rarity:'common',    desc:'Bold red outfit'},
-  {id:'sh_body_g', type:'body', val:'#66bb6a',name:'Forest Green', icon:'🟢', price:50,   rarity:'common',    desc:'Nature vibes'},
-  {id:'sh_body_p', type:'body', val:'#ab47bc',name:'Purple',       icon:'🟣', price:75,   rarity:'common',    desc:'Royal purple'},
-  {id:'sh_body_o', type:'body', val:'#ffa726',name:'Orange',       icon:'🟠', price:75,   rarity:'common',    desc:'Bright orange'},
-  {id:'sh_body_pk',type:'body', val:'#ec407a',name:'Hot Pink',     icon:'🩷', price:100,  rarity:'rare',      desc:'Eye-catching pink'},
-  {id:'sh_body_cy',type:'body', val:'#26c6da',name:'Cyan',         icon:'🩵', price:100,  rarity:'rare',      desc:'Cool cyan style'},
-  {id:'sh_body_wh',type:'body', val:'#fff',   name:'Pure White',   icon:'⬜', price:200,  rarity:'epic',      desc:'Ghost mode'},
+  {id:'sh_body_b',  type:'body', val:'#4fc3f7', name:'Sky Blue',      icon:'🩵', price:50,  rarity:'common', desc:'Default sky blue'},
+  {id:'sh_body_r',  type:'body', val:'#ef5350', name:'Fire Red',      icon:'🔴', price:50,  rarity:'common', desc:'Bold red outfit'},
+  {id:'sh_body_g',  type:'body', val:'#66bb6a', name:'Forest Green',  icon:'🟢', price:50,  rarity:'common', desc:'Nature vibes'},
+  {id:'sh_body_p',  type:'body', val:'#ab47bc', name:'Purple',        icon:'🟣', price:75,  rarity:'common', desc:'Royal purple'},
+  {id:'sh_body_o',  type:'body', val:'#ffa726', name:'Orange',        icon:'🟠', price:75,  rarity:'common', desc:'Bright orange'},
+  {id:'sh_body_pk', type:'body', val:'#ec407a', name:'Hot Pink',      icon:'🩷', price:100, rarity:'rare',   desc:'Eye-catching pink'},
+  {id:'sh_body_cy', type:'body', val:'#26c6da', name:'Cyan',          icon:'🩵', price:100, rarity:'rare',   desc:'Cool cyan style'},
+  {id:'sh_body_wh', type:'body', val:'#fff',    name:'Pure White',    icon:'⬜', price:200, rarity:'epic',   desc:'Ghost mode'},
+  {id:'sh_body_re', type:'body', val:'#f87171', name:'Rose',          icon:'🌹', price:120, rarity:'rare',   desc:'Rosy red'},
+  {id:'sh_body_em', type:'body', val:'#34d399', name:'Emerald',       icon:'💚', price:120, rarity:'rare',   desc:'Emerald shine'},
+  {id:'sh_body_in', type:'body', val:'#818cf8', name:'Indigo',        icon:'💜', price:150, rarity:'rare',   desc:'Deep indigo'},
+  {id:'sh_body_am', type:'body', val:'#fb923c', name:'Amber',         icon:'🧡', price:150, rarity:'rare',   desc:'Warm amber glow'},
   // SKIN TONES
-  {id:'sh_skin2',  type:'skin', val:'#f5c5a3',name:'Peach',        icon:'🫶', price:30,   rarity:'common',    desc:'Warm peach tone'},
-  {id:'sh_skin3',  type:'skin', val:'#d4956a',name:'Tan',          icon:'🤝', price:30,   rarity:'common',    desc:'Sun-kissed look'},
-  {id:'sh_skin4',  type:'skin', val:'#a0624a',name:'Brown',        icon:'✊', price:30,   rarity:'common',    desc:'Rich brown tone'},
-  {id:'sh_skin5',  type:'skin', val:'#6b3a2a',name:'Dark',         icon:'🤜', price:30,   rarity:'common',    desc:'Deep dark tone'},
+  {id:'sh_skin1', type:'skin', val:'#ffcc80', name:'Light',  icon:'✋', price:0,  rarity:'common', desc:'Default skin'},
+  {id:'sh_skin2', type:'skin', val:'#f5c5a3', name:'Peach',  icon:'🫶', price:30, rarity:'common', desc:'Warm peach tone'},
+  {id:'sh_skin3', type:'skin', val:'#d4956a', name:'Tan',    icon:'🤝', price:30, rarity:'common', desc:'Sun-kissed look'},
+  {id:'sh_skin4', type:'skin', val:'#a0624a', name:'Brown',  icon:'✊', price:30, rarity:'common', desc:'Rich brown tone'},
+  {id:'sh_skin5', type:'skin', val:'#6b3a2a', name:'Dark',   icon:'🤜', price:30, rarity:'common', desc:'Deep dark tone'},
+  {id:'sh_skin6', type:'skin', val:'#ffe0b2', name:'Cream',  icon:'🙌', price:30, rarity:'common', desc:'Soft cream tone'},
   // EYES
-  {id:'sh_eye_sl', type:'eyes', val:'sleepy', name:'Sleepy Eyes',  icon:'😴', price:60,   rarity:'common',    desc:'Always tired'},
-  {id:'sh_eye_wi', type:'eyes', val:'wide',   name:'Wide Eyes',    icon:'😳', price:80,   rarity:'common',    desc:'Permanently shocked'},
-  {id:'sh_eye_cr', type:'eyes', val:'cross',  name:'Cross Eyes',   icon:'😵', price:90,   rarity:'rare',      desc:'Dizzy all day'},
-  {id:'sh_eye_st', type:'eyes', val:'star',   name:'Star Eyes',    icon:'🌟', price:150,  rarity:'rare',      desc:'You\'re a star'},
-  {id:'sh_eye_co', type:'eyes', val:'cool',   name:'Cool Shades',  icon:'😎', price:200,  rarity:'epic',      desc:'Too cool for school'},
+  {id:'sh_eye_no', type:'eyes', val:'normal', name:'Normal Eyes',  icon:'😐', price:0,   rarity:'common', desc:'Classic eyes'},
+  {id:'sh_eye_sl', type:'eyes', val:'sleepy', name:'Sleepy Eyes',  icon:'😴', price:60,  rarity:'common', desc:'Always tired'},
+  {id:'sh_eye_wi', type:'eyes', val:'wide',   name:'Wide Eyes',    icon:'😳', price:80,  rarity:'common', desc:'Permanently shocked'},
+  {id:'sh_eye_cr', type:'eyes', val:'cross',  name:'Cross Eyes',   icon:'😵', price:90,  rarity:'rare',   desc:'Dizzy all day'},
+  {id:'sh_eye_st', type:'eyes', val:'star',   name:'Star Eyes',    icon:'🌟', price:150, rarity:'rare',   desc:'You\'re a star'},
+  {id:'sh_eye_co', type:'eyes', val:'cool',   name:'Cool Shades',  icon:'😎', price:200, rarity:'epic',   desc:'Too cool for school'},
+  {id:'sh_eye_an', type:'eyes', val:'angry',  name:'Angry Eyes',   icon:'😠', price:120, rarity:'rare',   desc:'Always mad'},
+  {id:'sh_eye_ht', type:'eyes', val:'heart',  name:'Heart Eyes',   icon:'😍', price:140, rarity:'rare',   desc:'Full of love'},
+  {id:'sh_eye_dz', type:'eyes', val:'dizzy',  name:'Dizzy Eyes',   icon:'🌀', price:110, rarity:'rare',   desc:'Spinning out'},
 ];
 
 let shopOwned = JSON.parse(localStorage.getItem('obbyShop') || '[]');
@@ -821,65 +854,194 @@ function mkIb(lbl,vals,ics,key){
 }
 
 function showWardrobe(){
-  // Pause game while wardrobe is open
-  const wasPaused = (gs !== 'playing');
-  if(!wasPaused) gs = 'paused';
+  const wasPaused=(gs!=='playing');
+  if(!wasPaused) gs='paused';
+  const ex=document.getElementById('wardModal');if(ex){ex.remove();if(!wasPaused)gs='playing';return;}
 
-  const ex = document.getElementById('wardModal'); if(ex){ex.remove();if(!wasPaused)gs='playing';return;}
-  const modal = document.createElement('div'); modal.id='wardModal'; modal.className='ward-modal';
-  modal.onclick = e=>{ if(e.target===modal){ modal.remove(); if(!wasPaused)gs='playing'; } };
+  const modal=document.createElement('div');modal.id='wardModal';modal.className='ward-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:1500;backdrop-filter:blur(6px);overflow-y:auto;padding:10px 0';
+  modal.onclick=e=>{if(e.target===modal){modal.remove();if(!wasPaused)gs='playing';}};
 
-  const box = document.createElement('div'); box.className='ward-box';
-  const xb = document.createElement('button'); xb.className='ward-close'; xb.textContent='✕';
-  xb.onclick=()=>{ modal.remove(); if(!wasPaused)gs='playing'; };
-  box.appendChild(xb);
+  const box=document.createElement('div');
+  box.style.cssText='background:#0f1120;border:3px solid #60a5fa;border-radius:20px;width:700px;max-width:97vw;color:#fff;position:relative;display:flex;flex-direction:column;max-height:90vh';
 
-  const h2 = document.createElement('h2'); h2.textContent='👕 WARDROBE'; box.appendChild(h2);
+  // ── Header
+  const hdr=document.createElement('div');
+  hdr.style.cssText='background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:16px 22px;border-radius:17px 17px 0 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0';
+  hdr.innerHTML='<span style="font-size:1.5rem;font-weight:900;color:#bfdbfe;letter-spacing:3px">👕 LOCKER</span>';
+  const xb=document.createElement('button');xb.style.cssText='background:none;border:none;color:rgba(255,255,255,.4);font-size:1.4rem;cursor:pointer';xb.textContent='✕';xb.onclick=()=>{modal.remove();if(!wasPaused)gs='playing';};
+  hdr.appendChild(xb);box.appendChild(hdr);
 
-  // Live mini preview inside modal
-  const wpv = document.createElement('canvas'); wpv.width=80; wpv.height=110;
-  wpv.style.cssText='background:linear-gradient(180deg,#1a1a4e,#2d3a7a);border-radius:12px;border:2px solid rgba(255,255,255,.1);display:block;margin:0 auto 14px;image-rendering:pixelated';
-  const wpc = wpv.getContext('2d');
-  let wpa=0;
-  function animW(){
-    wpa++;wpc.clearRect(0,0,80,110);
-    wpc.fillStyle='#4a9e3f';wpc.fillRect(0,90,80,20);
-    wpc.fillStyle='#6fcf57';wpc.fillRect(0,90,80,7);
-    drawChar(wpc,26,44,cos,wpa,true);
-    if(document.getElementById('wardModal'))requestAnimationFrame(animW);
+  // ── Body: preview + tabs
+  const body=document.createElement('div');
+  body.style.cssText='display:flex;flex:1;min-height:0;overflow:hidden';
+
+  // Left: preview panel
+  const previewPanel=document.createElement('div');
+  previewPanel.style.cssText='width:160px;flex-shrink:0;background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;align-items:center;padding:20px 12px;gap:12px';
+
+  const wpv=document.createElement('canvas');wpv.width=100;wpv.height=140;
+  wpv.style.cssText='background:linear-gradient(180deg,#1a1a4e,#2d3a7a);border-radius:14px;border:2px solid rgba(255,255,255,.1);image-rendering:pixelated;width:100px;height:140px';
+  const wpc=wpv.getContext('2d');let wpa=0;
+  function animW(){wpa++;wpc.clearRect(0,0,100,140);wpc.fillStyle='#4a9e3f';wpc.fillRect(0,112,100,28);wpc.fillStyle='#6fcf57';wpc.fillRect(0,112,100,8);drawChar(wpc,36,62,cos,wpa,true);if(document.getElementById('wardModal'))requestAnimationFrame(animW);}
+  previewPanel.appendChild(wpv);animW();
+
+  const pvLabel=document.createElement('div');pvLabel.style.cssText='font-size:.6rem;letter-spacing:3px;color:rgba(255,255,255,.25);text-transform:uppercase';pvLabel.textContent='PREVIEW';
+  previewPanel.appendChild(pvLabel);
+
+  // Current outfit summary
+  const outfitSummary=document.createElement('div');
+  outfitSummary.style.cssText='width:100%;background:rgba(255,255,255,.04);border-radius:10px;padding:10px;font-size:.62rem;color:rgba(255,255,255,.4);line-height:1.8;letter-spacing:.5px';
+  function updateSummary(){
+    outfitSummary.innerHTML=`<div style="color:rgba(255,255,255,.25);font-size:.55rem;letter-spacing:2px;margin-bottom:4px">EQUIPPED</div>`+
+    `Hat: ${cos.hat==='none'?'—':cos.hat}<br>Trail: ${cos.trail==='none'?'—':cos.trail}<br>Eyes: ${cos.eyes}`;
   }
-  box.appendChild(wpv); animW();
+  updateSummary();
+  previewPanel.appendChild(outfitSummary);
 
-  const lay = document.createElement('div'); lay.className='cl'; lay.style.flexDirection='column'; lay.style.gap='10px';
-  const op = document.createElement('div'); op.className='op';
+  body.appendChild(previewPanel);
 
-  op.appendChild(mkSw('SKIN', SKINS, 'skin'));
-  // Body: standard + unlocked
-  const bg2 = mkSw('BODY', BODIES, 'body');
-  const br2 = bg2.querySelector('.sr');
-  unlocked.bodies.forEach(b=>{
-    const s=document.createElement('div');
-    s.className='sw'+(cos.body===b?' sel':'');
-    s.style.background=b==='2026'?'linear-gradient(135deg,#fbbf24,#b45309)':'#a855f7';
-    s.style.border='2px solid #ff6b35';
-    s.onclick=()=>{cos.body=b;br2.querySelectorAll('.sw').forEach(x=>x.classList.remove('sel'));s.classList.add('sel');};
-    br2.appendChild(s);
+  // Right: tab content
+  const rightPanel=document.createElement('div');
+  rightPanel.style.cssText='flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden';
+
+  // Tab bar
+  const tabBar=document.createElement('div');
+  tabBar.style.cssText='display:flex;gap:2px;padding:10px 12px 0;background:rgba(255,255,255,.02);flex-shrink:0;flex-wrap:wrap';
+
+  const TABS=[
+    {id:'skin', label:'🎨 Skin', key:'skin'},
+    {id:'body', label:'👕 Body', key:'body'},
+    {id:'eyes', label:'👀 Eyes', key:'eyes'},
+    {id:'hat',  label:'🧢 Hats', key:'hat'},
+    {id:'trail',label:'✨ Trails',key:'trail'},
+  ];
+
+  let activeTab='skin';
+  const tabBtns={};
+  const tabPanels={};
+
+  TABS.forEach(tab=>{
+    const btn=document.createElement('button');
+    btn.style.cssText=`background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-bottom:none;border-radius:10px 10px 0 0;padding:7px 14px;font-size:.75rem;font-weight:900;color:rgba(255,255,255,.4);cursor:pointer;letter-spacing:1px;transition:all .15s`;
+    btn.textContent=tab.label;
+    btn.onclick=()=>switchTab(tab.id);
+    tabBtns[tab.id]=btn;
+    tabBar.appendChild(btn);
   });
-  op.appendChild(bg2);
-  op.appendChild(mkIb('EYES', EYES, ['😐','😴','😳','😵','🌟','😎'], 'eyes'));
-  const ah=[...HATS,...unlocked.hats], ahi=['🚫','🧢','👑','🎉','🧙','😇','🛠️','🌋'];
-  op.appendChild(mkIb('HAT', ah, ahi.slice(0,ah.length), 'hat'));
-  const at=[...TRAILS,...unlocked.trails], ati=['🚫','🔥','⭐','🌈','❄️','👼'];
-  op.appendChild(mkIb('TRAIL', at, ati.slice(0,at.length), 'trail'));
+  rightPanel.appendChild(tabBar);
 
-  lay.appendChild(op); box.appendChild(lay);
+  // Tab content area
+  const tabContent=document.createElement('div');
+  tabContent.style.cssText='flex:1;overflow-y:auto;padding:14px 14px 14px;background:rgba(255,255,255,.02);border-top:2px solid rgba(255,255,255,.08)';
 
-  const rb2 = document.createElement('button'); rb2.className='ward-resume';
-  rb2.textContent = wasPaused ? '✕ CLOSE' : '▶ BACK TO GAME';
-  rb2.onclick=()=>{ modal.remove(); if(!wasPaused)gs='playing'; };
-  box.appendChild(rb2);
+  // Build each tab panel
+  function buildSwatchPanel(key, allVals, allLabels, allColors){
+    const panel=document.createElement('div');
+    panel.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px';
+    allVals.forEach((val,i)=>{
+      const owned=val==='#ffcc80'||val==='normal'||val==='none'||val==='#4fc3f7'||shopOwned.includes(getSkinShopId(key,val))||true;
+      const card=document.createElement('div');
+      const isActive=cos[key]===val;
+      card.style.cssText=`background:rgba(255,255,255,.05);border:2px solid ${isActive?'#60a5fa':'rgba(255,255,255,.1)'};border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s;position:relative`;
+      card.onmouseenter=()=>{if(cos[key]!==val)card.style.borderColor='rgba(96,165,250,.5)';card.style.transform='scale(1.04)';};
+      card.onmouseleave=()=>{card.style.borderColor=cos[key]===val?'#60a5fa':'rgba(255,255,255,.1)';card.style.transform='';};
+      // Swatch
+      const swatch=document.createElement('div');
+      if(key==='skin'||key==='body'){
+        swatch.style.cssText=`width:36px;height:36px;border-radius:50%;margin:0 auto 5px;border:2px solid rgba(255,255,255,.15)`;
+        swatch.style.background=val==='2026'?'linear-gradient(135deg,#fbbf24,#b45309)':val==='neon'?'linear-gradient(135deg,#a855f7,#6d28d9)':val;
+      } else {
+        swatch.style.cssText='font-size:1.4rem;margin-bottom:5px;line-height:1';
+        swatch.textContent=allLabels?allLabels[i]:'?';
+      }
+      card.appendChild(swatch);
+      const lbl=document.createElement('div');lbl.style.cssText='font-size:.58rem;font-weight:900;color:rgba(255,255,255,.6);letter-spacing:.5px';
+      lbl.textContent=allLabels&&key!=='skin'&&key!=='body'?'':val==='none'?'None':val==='normal'?'Normal':val.startsWith('#')?(SHOP_ITEMS.find(x=>x.val===val&&x.type===key)||{name:val}).name:val;
+      card.appendChild(lbl);
+      if(isActive){const dot=document.createElement('div');dot.style.cssText='position:absolute;top:4px;right:4px;width:8px;height:8px;background:#60a5fa;border-radius:50%';card.appendChild(dot);}
+      card.onclick=()=>{cos[key]=val;updateSummary();rebuildPanel(key);};
+      panel.appendChild(card);
+    });
+    return panel;
+  }
 
-  modal.appendChild(box); document.body.appendChild(modal);
+  function getSkinShopId(key,val){
+    const item=SHOP_ITEMS.find(x=>x.type===key&&x.val===val);
+    return item?item.id:'';
+  }
+
+  function buildIconPanel(key, allVals, allIcons){
+    const panel=document.createElement('div');
+    panel.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px';
+    allVals.forEach((val,i)=>{
+      const shopItem=SHOP_ITEMS.find(x=>x.type===key&&x.val===val);
+      const owned=!shopItem||shopOwned.includes(shopItem.id)||shopItem.price===0;
+      const isActive=cos[key]===val;
+      const card=document.createElement('div');
+      card.style.cssText=`background:rgba(255,255,255,.05);border:2px solid ${isActive?'#60a5fa':owned?'rgba(255,255,255,.1)':'rgba(255,255,255,.05)'};border-radius:12px;padding:10px 6px 8px;text-align:center;cursor:pointer;transition:all .15s;position:relative;opacity:${owned?1:0.6}`;
+      card.onmouseenter=()=>{card.style.transform='scale(1.04)';if(cos[key]!==val)card.style.borderColor=owned?'rgba(96,165,250,.5)':'rgba(251,191,36,.4)';};
+      card.onmouseleave=()=>{card.style.transform='';card.style.borderColor=isActive?'#60a5fa':owned?'rgba(255,255,255,.1)':'rgba(255,255,255,.05)';};
+      const ico=document.createElement('div');ico.style.cssText='font-size:1.5rem;margin-bottom:4px';ico.textContent=allIcons[i]||'?';
+      const nm=document.createElement('div');nm.style.cssText='font-size:.58rem;font-weight:900;color:rgba(255,255,255,.65);letter-spacing:.3px';nm.textContent=shopItem?shopItem.name:(val==='none'?'None':val);
+      card.append(ico,nm);
+      if(!owned){const price=document.createElement('div');price.style.cssText='font-size:.55rem;color:#fbbf24;margin-top:2px';price.textContent='🪙 '+shopItem.price;card.appendChild(price);}
+      if(isActive){const dot=document.createElement('div');dot.style.cssText='position:absolute;top:4px;right:4px;width:8px;height:8px;background:#60a5fa;border-radius:50%';card.appendChild(dot);}
+      card.onclick=()=>{
+        if(!owned){showToast('🛒 Buy this in the Shop first!');return;}
+        cos[key]=val;updateSummary();rebuildPanel(key);
+      };
+      panel.appendChild(card);
+    });
+    return panel;
+  }
+
+  function rebuildPanel(key){
+    if(!tabPanels[key])return;
+    tabPanels[key].innerHTML='';
+    const content=key==='skin'?buildSwatchPanel('skin',SKINS):
+      key==='body'?buildSwatchPanel('body',[...BODIES,...unlocked.bodies.filter(b=>!BODIES.includes(b))]):
+      key==='eyes'?buildIconPanel('eyes',EYES,['😐','😴','😳','😵','🌟','😎','😠','😍','🌀']):
+      key==='hat'?buildIconPanel('hat',[...HATS,...unlocked.hats.filter(h=>!HATS.includes(h))],['🚫','🧢','👑','🎉','🧙','😇','🤠','⛑️','🌸','🎅','🛠️','🌋']):
+      buildIconPanel('trail',[...TRAILS,...unlocked.trails.filter(t=>!TRAILS.includes(t))],['🚫','🔥','⭐','🌈','❄️','👼','⚡','🫧','💕']);
+    tabPanels[key].appendChild(content);
+  }
+
+  TABS.forEach(tab=>{
+    const panel=document.createElement('div');panel.id='wardTab_'+tab.id;
+    panel.style.display='none';
+    tabPanels[tab.id]=panel;
+    rebuildPanel(tab.id);
+    tabContent.appendChild(panel);
+  });
+
+  rightPanel.appendChild(tabContent);
+  body.appendChild(rightPanel);
+  box.appendChild(body);
+
+  // Footer
+  const footer=document.createElement('div');
+  footer.style.cssText='padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);display:flex;gap:10px;flex-shrink:0;background:rgba(0,0,0,.3);border-radius:0 0 17px 17px';
+  const shopLink=document.createElement('button');shopLink.className='btn2';shopLink.style.cssText='padding:9px 18px;font-size:.8rem';shopLink.textContent='🛒 Open Shop';shopLink.onclick=()=>{modal.remove();if(!wasPaused)gs='playing';showShop();};
+  const resumeBtn=document.createElement('button');resumeBtn.className='ward-resume';resumeBtn.style.cssText='flex:1;padding:11px;font-size:.9rem;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:none;border-radius:12px;color:#fff;letter-spacing:2px';
+  resumeBtn.textContent=wasPaused?'✕ CLOSE':'▶ BACK TO GAME';
+  resumeBtn.onclick=()=>{modal.remove();if(!wasPaused)gs='playing';};
+  footer.append(shopLink,resumeBtn);
+  box.appendChild(footer);
+
+  function switchTab(id){
+    activeTab=id;
+    TABS.forEach(t=>{
+      const isActive=t.id===id;
+      tabBtns[t.id].style.background=isActive?'rgba(255,255,255,.08)':'rgba(255,255,255,.04)';
+      tabBtns[t.id].style.borderColor=isActive?'rgba(96,165,250,.4)':'rgba(255,255,255,.1)';
+      tabBtns[t.id].style.color=isActive?'#bfdbfe':'rgba(255,255,255,.4)';
+      tabPanels[t.id].style.display=isActive?'block':'none';
+    });
+  }
+  switchTab('skin');
+
+  modal.appendChild(box);document.body.appendChild(modal);
 }
 
 let luckyBlockCount = 0;
@@ -1310,7 +1472,7 @@ function showMainMenu(){
 // ══════════════════════════════════════════
 // MINI-GAME 1: COIN CATCH
 // ══════════════════════════════════════════
-function showCoinCatch(){
+function showCoinCatch(onBack){
   const existing=document.getElementById('mgoverlay');if(existing)existing.remove();
   stopL();
 
@@ -1347,7 +1509,7 @@ function showCoinCatch(){
   startBtn.textContent='▶ START'; 
   const backBtn=document.createElement('button');
   backBtn.className='btn2'; backBtn.style.cssText='padding:9px 16px;font-size:.85rem';
-  backBtn.textContent='← BACK'; backBtn.onclick=()=>{overlay.remove();showMainMenu();};
+  backBtn.textContent='← BACK'; backBtn.onclick=()=>{overlay.remove();if(onBack)onBack();else showMainMenu();};
   btnRow.append(backBtn,startBtn);
   body.appendChild(btnRow);
   modal.appendChild(body);
@@ -1469,7 +1631,7 @@ function showCoinCatch(){
 // ══════════════════════════════════════════
 // MINI-GAME 2: LAVA DODGE
 // ══════════════════════════════════════════
-function showLavaDodge(){
+function showLavaDodge(onBack){
   const existing=document.getElementById('mgoverlay');if(existing)existing.remove();
   stopL();
 
@@ -1620,7 +1782,7 @@ function showLavaDodge(){
   function ldKeyUp(e){ldKeys[e.code]=false;}
   // Cleanup keys when leaving
   backBtn2._cleanup=()=>{document.removeEventListener('keydown',ldKeyDn);document.removeEventListener('keyup',ldKeyUp);};
-  backBtn2.onclick=()=>{backBtn2._cleanup&&backBtn2._cleanup();cancelAnimationFrame(ldRid);clearInterval(ldInterval);overlay.remove();showMainMenu();};
+  backBtn2.onclick=()=>{backBtn2._cleanup&&backBtn2._cleanup();cancelAnimationFrame(ldRid);clearInterval(ldInterval);overlay.remove();if(onBack)onBack();else showMainMenu();};
 
   ldReset();ldDraw();
 }
@@ -1629,7 +1791,7 @@ function showLavaDodge(){
 // ══════════════════════════════════════════
 // MINI-GAME 3: MEMORY FLASH
 // ══════════════════════════════════════════
-function showMemoryFlash(){
+function showMemoryFlash(onBack){
   const existing=document.getElementById('mgoverlay');if(existing)existing.remove();
   stopL();
 
@@ -1672,7 +1834,7 @@ function showMemoryFlash(){
   const startBtn3=document.createElement('button');
   startBtn3.className='btn';startBtn3.style.cssText='flex:1;font-size:.9rem;padding:9px';startBtn3.textContent='▶ START';
   const backBtn3=document.createElement('button');
-  backBtn3.className='btn2';backBtn3.style.cssText='padding:9px 16px;font-size:.85rem';backBtn3.textContent='← BACK';backBtn3.onclick=()=>{overlay.remove();showMainMenu();};
+  backBtn3.className='btn2';backBtn3.style.cssText='padding:9px 16px;font-size:.85rem';backBtn3.textContent='← BACK';backBtn3.onclick=()=>{overlay.remove();if(onBack)onBack();else showMainMenu();};
   btnRow.append(backBtn3,startBtn3);
   body.appendChild(btnRow);
   modal.appendChild(body);
@@ -1779,6 +1941,69 @@ function showMemoryFlash(){
   });
 
   startBtn3.onclick=mfStart;
+}
+
+// ── IN-GAME MINI-GAME MENU ──
+function showInGameMiniMenu(){
+  const existing=document.getElementById('mgoverlay');if(existing){existing.remove();if(gs==='paused')gs='playing';return;}
+  const wasPaused=(gs!=='playing');
+  if(!wasPaused) gs='paused';
+
+  const overlay=document.createElement('div');
+  overlay.id='mgoverlay';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.80);display:flex;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(5px)';
+
+  const box=document.createElement('div');
+  box.style.cssText='background:#0f1120;border:3px solid #a855f7;border-radius:20px;padding:24px 28px;width:400px;max-width:94vw;color:#fff;position:relative';
+
+  // Close button
+  const xb=document.createElement('button');
+  xb.style.cssText='position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);font-size:1.3rem;cursor:pointer';
+  xb.textContent='✕';
+  xb.onclick=()=>{overlay.remove();if(!wasPaused)gs='playing';};
+  box.appendChild(xb);
+
+  // Title
+  const h2=document.createElement('h2');
+  h2.style.cssText='font-size:1.5rem;font-weight:900;color:#a855f7;text-align:center;letter-spacing:2px;margin-bottom:4px';
+  h2.textContent='🎮 MINI-GAMES';
+  box.appendChild(h2);
+
+  const sub=document.createElement('p');
+  sub.style.cssText='text-align:center;font-size:.72rem;color:rgba(255,255,255,.3);letter-spacing:2px;margin-bottom:18px';
+  sub.textContent='GAME IS PAUSED WHILE YOU PLAY';
+  box.appendChild(sub);
+
+  const mgDefs=[
+    {icon:'🪙',name:'Coin Catch',desc:'Catch coins, dodge bombs!',color:'#fbbf24',fn:()=>{overlay.remove();showCoinCatch(()=>{if(!wasPaused)gs='playing';});}},
+    {icon:'🌋',name:'Lava Dodge',desc:'Dodge falling lava blobs!',color:'#ff6b35',fn:()=>{overlay.remove();showLavaDodge(()=>{if(!wasPaused)gs='playing';});}},
+    {icon:'🧠',name:'Memory Flash',desc:'Remember the pattern!',color:'#a855f7',fn:()=>{overlay.remove();showMemoryFlash(()=>{if(!wasPaused)gs='playing';});}},
+  ];
+
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px';
+
+  mgDefs.forEach(mg=>{
+    const card=document.createElement('div');
+    card.style.cssText=`background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s`;
+    card.onmouseenter=()=>{card.style.borderColor=mg.color;card.style.background='rgba(255,255,255,.1)';card.style.transform='translateY(-3px)';};
+    card.onmouseleave=()=>{card.style.borderColor='rgba(255,255,255,.1)';card.style.background='rgba(255,255,255,.05)';card.style.transform='';};
+    card.onclick=mg.fn;
+    card.innerHTML=`<div style="font-size:2rem;margin-bottom:6px">${mg.icon}</div><div style="font-size:.82rem;font-weight:900;margin-bottom:3px">${mg.name}</div><div style="font-size:.62rem;color:rgba(255,255,255,.4);line-height:1.4">${mg.desc}</div>`;
+    grid.appendChild(card);
+  });
+  box.appendChild(grid);
+
+  // Resume button
+  const resumeBtn=document.createElement('button');
+  resumeBtn.className='btn';
+  resumeBtn.style.cssText='width:100%;font-size:.95rem;padding:11px;letter-spacing:2px';
+  resumeBtn.textContent='▶ RESUME GAME';
+  resumeBtn.onclick=()=>{overlay.remove();if(!wasPaused)gs='playing';};
+  box.appendChild(resumeBtn);
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 }
 
 // ── INIT ──
