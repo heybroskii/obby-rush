@@ -1,1 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBBY RUSH</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
 
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+background:#0a0a1a;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+height:100vh;
+font-family:'Nunito',sans-serif;
+overflow:hidden;
+}
+
+#title{
+font-family:'Fredoka One',cursive;
+font-size:2.4rem;
+color:#fff;
+letter-spacing:4px;
+margin-bottom:6px;
+text-shadow:0 0 20px #ff6b35;
+}
+
+#hud{
+display:flex;
+gap:14px;
+margin-bottom:8px;
+font-size:.9rem;
+font-weight:900;
+color:#fff;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.hud-item{
+background:rgba(255,255,255,.1);
+padding:4px 14px;
+border-radius:20px;
+}
+
+#gameCanvas{
+border:3px solid #ff6b35;
+border-radius:12px;
+}
+
+#overlay{
+position:absolute;
+display:flex;
+align-items:center;
+justify-content:center;
+width:100%;
+height:100%;
+}
+
+.overlay-box{
+background:#11112a;
+border:3px solid #ff6b35;
+border-radius:16px;
+padding:30px;
+text-align:center;
+color:#fff;
+min-width:300px;
+}
+
+.btn{
+background:#ff6b35;
+color:#fff;
+border:none;
+padding:10px 20px;
+border-radius:25px;
+cursor:pointer;
+margin:6px;
+font-weight:bold;
+}
+
+input[type=text],input[type=color]{
+margin:6px 0;
+padding:8px;
+border-radius:8px;
+border:none;
+text-align:center;
+}
+</style>
+</head>
+<body>
+
+<div id="title">🔥 OBBY RUSH 🔥</div>
+
+<div id="hud">
+<div class="hud-item">👤 <span id="nameDisplay">???</span></div>
+<div class="hud-item">❤️ <span id="livesDisplay">3</span></div>
+<div class="hud-item">⭐ <span id="stageDisplay">1</span></div>
+<div class="hud-item">🪙 <span id="coinDisplay">0</span></div>
+</div>
+
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<div id="overlay"></div>
+
+<script>
+const canvas=document.getElementById("gameCanvas");
+const ctx=canvas.getContext("2d");
+const W=canvas.width,H=canvas.height;
+const GRAVITY=.6,GROUND_Y=H-50;
+let keys={},cameraX=0;
+
+let username="";
+let lives=3,stage=1,totalCoins=0;
+
+let cosmetics={
+shirt:"#4fc3f7",
+pants:"#1565c0",
+glasses:false,
+chain:false
+};
+
+let player={x:60,y:GROUND_Y-60,w:32,h:60,vx:0,vy:0,jumps:2,onGround:false};
+
+function saveData(){
+localStorage.setItem("obby_"+username,JSON.stringify({coins:totalCoins,cosmetics}));
+}
+
+function loadData(){
+const data=JSON.parse(localStorage.getItem("obby_"+username));
+if(data){
+totalCoins=data.coins||0;
+cosmetics=data.cosmetics||cosmetics;
+}
+}
+
+function updateHUD(){
+document.getElementById("nameDisplay").textContent=username;
+document.getElementById("livesDisplay").textContent=lives;
+document.getElementById("stageDisplay").textContent=stage;
+document.getElementById("coinDisplay").textContent=totalCoins;
+}
+
+function showName(){
+document.getElementById("overlay").innerHTML=`
+<div class="overlay-box">
+<h2>ENTER NAME</h2>
+<input type="text" id="nameInput" maxlength="12">
+<br>
+<button class="btn" onclick="start()">PLAY</button>
+</div>`;
+}
+
+function start(){
+username=document.getElementById("nameInput").value.trim().toUpperCase();
+if(!username)return;
+loadData();
+updateHUD();
+document.getElementById("overlay").innerHTML=`
+<div class="overlay-box">
+<h2>HEY ${username}</h2>
+<button class="btn" onclick="play()">PLAY</button>
+<button class="btn" onclick="customize()">CUSTOMIZE</button>
+</div>`;
+}
+
+function customize(){
+document.getElementById("overlay").innerHTML=`
+<div class="overlay-box">
+<h2>DRIP LAB 😎</h2>
+
+<p>Shirt</p>
+<input type="color" value="${cosmetics.shirt}" onchange="cosmetics.shirt=this.value">
+
+<p>Pants</p>
+<input type="color" value="${cosmetics.pants}" onchange="cosmetics.pants=this.value">
+
+<br>
+<button class="btn" onclick="cosmetics.glasses=!cosmetics.glasses">🕶 Sunglasses</button>
+<button class="btn" onclick="cosmetics.chain=!cosmetics.chain">📿 Chain</button>
+
+<br><br>
+<button class="btn" onclick="saveData();start()">SAVE</button>
+</div>`;
+}
+
+function play(){
+document.getElementById("overlay").innerHTML="";
+lives=3;
+player.x=60;
+player.y=GROUND_Y-60;
+}
+
+document.addEventListener("keydown",e=>{
+keys[e.code]=true;
+if((e.code==="Space"||e.code==="ArrowUp")&&player.jumps>0){
+player.vy=-14;
+player.jumps--;
+}
+});
+
+document.addEventListener("keyup",e=>keys[e.code]=false);
+
+function update(){
+player.vy+=GRAVITY;
+
+if(keys["ArrowRight"])player.vx=4;
+else if(keys["ArrowLeft"])player.vx=-4;
+else player.vx*=.8;
+
+player.x+=player.vx;
+player.y+=player.vy;
+
+if(player.y+player.h>=GROUND_Y){
+player.y=GROUND_Y-player.h;
+player.vy=0;
+player.jumps=2;
+}
+}
+
+function drawPlayer(){
+const px=player.x-cameraX;
+const py=player.y;
+
+ctx.fillStyle="rgba(0,0,0,.3)";
+ctx.beginPath();
+ctx.ellipse(px+16,GROUND_Y,16,6,0,0,Math.PI*2);
+ctx.fill();
+
+ctx.fillStyle=cosmetics.shirt;
+ctx.fillRect(px+6,py+22,20,24);
+
+ctx.fillStyle=cosmetics.pants;
+ctx.fillRect(px+6,py+46,20,14);
+
+ctx.fillStyle="#ffe2b3";
+ctx.beginPath();
+ctx.arc(px+16,py+12,14,0,Math.PI*2);
+ctx.fill();
+
+ctx.fillStyle="#000";
+ctx.beginPath();
+ctx.arc(px+11,py+10,3,0,Math.PI*2);
+ctx.arc(px+21,py+10,3,0,Math.PI*2);
+ctx.fill();
+
+if(cosmetics.glasses){
+ctx.fillRect(px+6,py+6,20,6);
+}
+
+if(cosmetics.chain){
+ctx.strokeStyle="#ffd700";
+ctx.beginPath();
+ctx.arc(px+16,py+26,10,0,Math.PI);
+ctx.stroke();
+}
+}
+
+function draw(){
+ctx.clearRect(0,0,W,H);
+
+const sky=ctx.createLinearGradient(0,0,0,H);
+sky.addColorStop(0,"#1a1a4e");
+sky.addColorStop(1,"#0a0a1a");
+ctx.fillStyle=sky;
+ctx.fillRect(0,0,W,H);
+
+ctx.fillStyle="#4a9e3f";
+ctx.fillRect(0,GROUND_Y,W,50);
+
+drawPlayer();
+}
+
+function loop(){
+update();
+draw();
+requestAnimationFrame(loop);
+}
+
+showName();
+loop();
+</script>
+
+</body>
+</html>
